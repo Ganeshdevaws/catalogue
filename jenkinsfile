@@ -17,7 +17,7 @@ pipeline {
         //         sh 'ls -ltr'
         //         sh 'sonar-scanner'
         //     }
-        }
+        // }
         stage('Build') {
             steps {
                 sh 'ls -ltr'

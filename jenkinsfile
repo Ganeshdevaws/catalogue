@@ -1,5 +1,9 @@
 pipeline {
     agent { node { label 'AGENT-1' } }
+    environment{
+        //here if you create any variable you will have global access, since it is environment no need of def
+        packageVersion = ''
+    }
     stages {
         stage('Get version'){
             steps{
@@ -32,31 +36,32 @@ pipeline {
                 sh 'zip -r catalogue.zip ./* --exclude=.git --exclude=.zip'
             }
         }
-        stage('Build') {
+        stage('SAST') {
             steps {
                 echo "SAST done"
+                echo "package version: $packageVersion"
             }
         }
-        //install pipeline utility steps plugin, if not installed
-        // stage('Publish Artifact') {
-        //     steps {
-        //         nexusArtifactUploader(
-        //             nexusVersion: 'nexus3',
-        //             protocol: 'http',
-        //             nexusUrl: '172.31.82.63:8081/',
-        //             groupId: 'com.roboshop',
-        //             version: "1.0.3",
-        //             repository: 'catalogue',
-        //             credentialsId: 'nexus-auth',
-        //             artifacts: [
-        //                 [artifactId: 'catalogue',
-        //                 classifier: '',
-        //                 file: 'catalogue.zip',
-        //                 type: 'zip']
-        //             ]
-        //         )
-        //     }
-        // }
+        install pipeline utility steps plugin, if not installed
+        stage('Publish Artifact') {
+            steps {
+                nexusArtifactUploader(
+                    nexusVersion: 'nexus3',
+                    protocol: 'http',
+                    nexusUrl: '172.31.82.63:8081/',
+                    groupId: 'com.roboshop',
+                    version: "$packageVersion",
+                    repository: 'catalogue',
+                    credentialsId: 'nexus-auth',
+                    artifacts: [
+                        [artifactId: 'catalogue',
+                        classifier: '',
+                        file: 'catalogue.zip',
+                        type: 'zip']
+                    ]
+                )
+            }
+        }
         stage('Deploy') {
             steps {
                 echo "deployment"
